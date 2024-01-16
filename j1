@@ -1,0 +1,45 @@
+
+ # Deployment Pipeline Configuration (Jenkinsfile)
+
+pipeline {
+    agent any
+    
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build('your-image-name:latest')
+                }
+            }
+        }
+        
+        stage('Push to Docker Registry') {
+            steps {
+                script {
+                    docker.withRegistry('https://your-docker-registry.com', 'credentials-id') {
+                        docker.image('your-image-name:latest').push()
+                    }
+                }
+            }
+        }
+        
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    sh 'kubectl apply -f kubernetes/deployment.yaml'
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo 'Pipeline succeeded! Application deployed.'
+            // Add notifications or other post-success steps here
+        }
+        failure {
+            echo 'Pipeline failed! Notify the team...'
+            // Add notification or rollback steps here
+        }
+    }
+}
